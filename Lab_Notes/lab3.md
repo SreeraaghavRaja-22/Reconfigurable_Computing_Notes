@@ -46,7 +46,7 @@ begin
             -- case(wr_addr)
             assign wr_data to appropriate destination
             e.g. if wr_addr = C_GO_ADDR then go_r <= wr_data(0);
-            e.g. if wr_addr = 1C_N_ADDR then n_r <= wr_data(15 downto 0);
+            e.g. if wr_addr = C_N_ADDR then n_r <= wr_data(15 downto 0);
         end if; 
 
         if read 

@@ -1,7 +1,8 @@
-- Make sure to join Zoom before taking the test on honorlock 
+- Make sure to join Zoom before taking the test on honorlock
 
 #### Question 1: Pipelining Example 1
- ```
+
+ ```VHDL
  unsigned short a[100000]; //unsigned short; 16 bits 
 unsigned short b[100004];
  for int i=0; i < 100000; i++){
@@ -36,7 +37,7 @@ Speedup = CPU cycles / FPGA cycles / clock ratio
 Clock Ratio = CPU Clock Speed / FPGA Clock Speed
 Speedup = 3750000 / 20004 / 10
 ```
-	  
+
 - **Variable Rules:**
 	- If a variable is assigned on a rising clock edge it could become either a signal or a wire
 		- **If there exists a path where the design reads from a variable before assigning it, then it will become a register

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RC 9_19_25.md",
+                "file": "RC 9_26_25.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "RC 9_19_25"
+              "title": "RC 9_26_25"
             }
           },
           {
@@ -63,8 +63,7 @@
               "title": "RC_10_3_25"
             }
           }
-        ],
-        "currentTab": 3
+        ]
       }
     ],
     "direction": "vertical"
@@ -212,16 +211,17 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "03e5488b75e3eff4",
+  "active": "d636e5a54cbde757",
   "lastOpenFiles": [
+    "RC 9_24_25.md",
+    "RC_10_3_25.md",
+    "RC_10_6_25.md",
     "RC_10_1_25.md",
     "RC_9_29_25.md",
     "RC 9_26_25.md",
-    "RC 9_24_25.md",
-    "RC 9_22_25.md",
     "RC 9_19_25.md",
+    "RC 9_22_25.md",
     "RC 9_17_25.md",
-    "RC_10_3_25.md",
     "Images/Pasted image 20251004212533.png",
     "Images/Pasted image 20251004211832.png",
     "Images/Pasted image 20251004203633.png",

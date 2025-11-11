@@ -169,8 +169,14 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "dd33472503bb5cd6",
+  "active": "14c6f265cda72e32",
   "lastOpenFiles": [
+    "VHDL/delay.vhd",
+    "VHDL/vhdl_ls.toml",
+    "VHDL/ripple_carry_adder.vhd",
+    "VHDL",
+    "labs/lab5.md",
+    "Untitled.md",
     "notes/RC_9_22_25.md",
     "notes/RC_9_24_25.md",
     "notes/RC_9_29_25.md",
@@ -182,7 +188,6 @@
     "notes/RC_10_10_25.md",
     "notes/RC_10_6_25.md",
     "notes/RC_10_3_25.md",
-    "labs/lab5.md",
     "notes/RC_10_31_25_CDC.md",
     "labs/lab3.md",
     "RC_10_29_25_Binding_Resource_Sharing.md",
@@ -205,8 +210,6 @@
     "RC_10_3_25.md",
     "RC_10_13_25.md",
     "RC_10_6_25.md",
-    "RC_10_1_25.md",
-    "RC 10_10_25.md",
     "Images"
   ]
 }

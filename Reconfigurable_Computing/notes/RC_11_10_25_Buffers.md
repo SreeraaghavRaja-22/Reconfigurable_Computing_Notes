@@ -1,0 +1,124 @@
+# Buffers 
+---
+- Purposes 
+	- Flow control tasks for different production and consumption rates 
+	- Metastability issues 
+		- Memory clock is different from circuit clock 
+		- Buffer stores data at one speed and circuit reads data at another speed
+	- Stores "windows" of data, delivers to datapath 
+		- Window is a set of inputs needed each cycle by pipelined circuit 
+		- Generally, more efficient than datapath requesting needed data
+			- Push data into datapath as opposed to pulling data from memory
+	- Conversion between memory and datapath widths 
+		- Bus is 64-bit, but datapath requires 128-bits every cycle 
+			- Input to buffer is 64-bit and output is 128 bits 
+			- Buffer doesn't say it has data until receiving pairs of inputs 
+- **Most Common Buffer: First-in First-out (FIFO)**
+	- used for synchronized execution of parallel tasks 
+		- i.e., "flow control"
+	-  FIFO Image![[Pasted image 20251111133614.png]]
+		- Each task will produce until the FIFO after it is **not full**
+		- Each task will consume until the FIFO before it is **not empty**
+	- **"Task-Level Parallelism"** deals with **coarse-grain components**
+	- Beautifully Simple Control 
+		- Producer writes if not full 
+			- Full provides **back pressure**
+				- If the FIFO fills up, it will stall everything **upstream**
+		- Consumer reads if not empty 
+		- FIFO Diagram ![[Pasted image 20251111134047.png]]
+	- **FIFO Sizing**
+		- Tasks often produce/consume data at different rates 
+			- tasks can also be **streams of data**
+			- e.g., Ethernet data, AXI bus data, memory data
+		- We often need to "size" the FIFO accordingly to handle different rates without back pressure
+			- Fp = max messages per second of producer (msg/s)
+			- Fc = max messages per second of consumer (msg/s)
+				- Abstracted with "messages"
+		- Ideal Situation: Try to have the consumer read data faster than data is produced
+		- Three Situations
+			- 1) Fp <= Fc, assumes consumer is always ready 
+				- FIFO is only needed if tasks on different clock domains 
+					- FIFO depth of 1 (or 0)
+				- **Why do traditional pipelines use registers instead of FIFOs?**
+					- The execution of pipeline operations are already synchronized implicitly every clock cycle, so there is no need for a FIFO
+			- 2) Fp > Fc, assuming a constant producer stream
+				- FIFO would have to be infinitely large to avoid filling up 
+				- If this is unavoidable, producer must monitor the full flag 
+			- 3) Fp > Fc, but producer sends data in bursts 
+				- Ethernet capable of 10/40/100 Gb/s, but data is not available every cycle 
+				- We'll use B to represent the maximum number of messages that a producer might send consecutively (i.e. a burst)
+				- We'll also assume that after each burst, the FIFO has time to empty 
+			- **How to determine FIFO depth that avoids back pressure?**
+				- Fp - Fc = rate that FIFO fills up 
+					- like after 1 second, the FIFO will have Fp - Fc messages
+				- Next, we need to combine the "fill rate" with the duration of the next burst B
+					- B = # of consecutive messages
+					- Fp = msg / s
+					- Burst duration = B / Fp
+				- FIFO Depth = $$ fill_{rate} \cdot burst_{duration} = F_p - F_c * \frac{B}{F_p} = B \cdot (1 - \frac{F_c}{F_p}) $$
+				- E.G.
+					- Fp = 1M msgs/s
+					- Fc = 250k msgs/s
+					- B = 1000 msgs
+					- FIFO Depth = 750
+				- Remember: You can use a smaller depth with back pressure
+			- **Similar Problem**
+				- If time between bursts are sufficient for FIFO to drain, this means that producer data rate and consumer data rate are equal with *some* window of time 
+					- Dp = Producer data rate (msgs / window)
+					- Dc = Consumer data rate (msgs / window)
+					- Dp = Dc
+					- But, don't know when data produced/consumed within window 
+				- What is the minimum FIFO depth to avoid back pressure
+					- Sliding window of time 
+						- Can't produce more than Dp messages within any window 
+					- **Worst Case Situation**
+						- All Dp messages arrive at beginning of window 
+						- All Dc messages are consumed at the end of window 
+			- **Consider Several Situations**
+				- 1) Window much longer than time to produce / consume all messages
+					- Buffer needs a minimum depth of Dp since it has to buffer everything produced since data isn't consumed until later 
+				- 2) Window small enough to create overlap between Dp and Dc 
+					- Two situations can be combined: 
+						- **FIFO depth = min(window - Dc, Dp)**
+					- Examples for Dp - Dc = 10 messages 
+						- Window = 100 cycles => FIFO depth = 10
+						- Window = 15 cycles => FIFO depth = 5
+						- Window = 10 cycles => FIFO depth = 0 (not needed unless different clocks)
+	- **Other Uses**
+		- FIFOs are often used between RAM and pipeline 
+			- Outputs data in order, read from memory ![[Pasted image 20251111141039.png]]
+			- Timing Issues 
+				- Memory bandwidth too small 
+					- Production data rate from memory is less than the consumption data rate from the pipeline
+					- circuit stalls or wastes cycles while waiting for data 
+					- Example Pipeline ![[Pasted image 20251111141657.png]]
+				- Memory bandwidth larger than data consumption rate of circuit
+					- may happen if area exhausted
+				- Memory bandwidth larger than data consumption rate ![[Pasted image 20251111141946.png]]
+					- FIFO overfills 
+	- **Improvements**
+		- Do we need to fetch entire window from memory for each iteration?
+			- Only if windows of consecutive iterations are mutually exclusive 
+		- Commonly, consecutive iterations have overlapping windows 
+			- Overlap represents "reused" data 
+			- Ideally, would be fetched from memory just once 
+		- Smart Buffer 
+			- Part of the ROCCC compiler 
+			- Analyzes memory access patterns 
+			- Detected the "sliding windows", reused data
+			- Prevents multiple accesses to same data 
+			- Example Image![[Pasted image 20251111142331.png]]
+- **Comparison between Smart Buffer and FIFO**
+	- FIFO - *fetches a window for each iteration*
+		- Reads 3 elements every iteration 
+		- 100 * 3 accesses/iteration = 300 memory accesses
+	- Smart Buffer / Sliding Window Buffer / Window Generator - *fetches as much data as possible each cycle, buffer assembles data into windows*
+		- Ideally, reads each element once 
+			-  # accesses = array size 
+			- Circuit performance is equal to latency plus time to read array from memory 
+				- **No matter how much computation, execution time is approximately equal to time to stream in data**
+					- Only for streaming examples 
+		- 102 memory accesses 
+			- Essentially improves memory bandwidth by 3x
+			- How does this help?
+				- **Smart buffers enable more unrolling**

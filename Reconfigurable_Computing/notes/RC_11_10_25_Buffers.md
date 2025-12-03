@@ -80,7 +80,7 @@
 				- 2) Window small enough to create overlap between Dp and Dc 
 					- Two situations can be combined: 
 						- **FIFO depth = min(window - Dc, Dp)**
-					- Examples for Dp - Dc = 10 messages 
+					- Examples for Dp = Dc = 10 messages 
 						- Window = 100 cycles => FIFO depth = 10
 						- Window = 15 cycles => FIFO depth = 5
 						- Window = 10 cycles => FIFO depth = 0 (not needed unless different clocks)

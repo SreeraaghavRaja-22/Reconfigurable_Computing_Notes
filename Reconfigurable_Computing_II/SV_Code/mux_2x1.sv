@@ -12,3 +12,41 @@ assign out = sel ? in1 : in0;
 // assign out = sel == 1'b1 ? in1 : in0;
 // 1 is 32-bits wide -> leads to automatic truncation
 
+endmodule 
+
+
+module mux2x1_if(
+    input logic in0, 
+    input logic in1, 
+    input logic sel, 
+    output logic out
+); 
+
+    always @(*) begin 
+        if (sel) begin 
+            out = in1; 
+        end else begin 
+            out = in0;
+        end 
+    end 
+
+endmodule
+
+module mux2x1_if2(
+    input logic in0, 
+    input logic in1, 
+    input logic sel, 
+    output logic out
+); 
+    // Advice: use blocking aassignments for combinational logic
+    // can still work with non-blocking assignments
+    // make explicit intent for combinational logic
+    always_comb begin 
+        if(sel) begin 
+            out = in1; 
+        end else begin
+            out = in0; 
+        end 
+    end
+
+endmodule 

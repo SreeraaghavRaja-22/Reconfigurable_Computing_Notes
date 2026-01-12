@@ -10,4 +10,5 @@ module mux2x1_assign(
 // continuous assignment / concurrent assignment
 assign out = sel ? in1 : in0;
 // assign out = sel == 1'b1 ? in1 : in0;
+// 1 is 32-bits wide -> leads to automatic truncation
 

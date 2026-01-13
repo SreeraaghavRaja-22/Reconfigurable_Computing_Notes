@@ -21,3 +21,12 @@
 
 - always_comb will always change at time 0 regardless of the inputs changing
 - always @(*) will only execute when the inputs change
+
+### Unique Keyword
+
+- Makes sure you don't have multiple instances of the same case (case overlap)
+- Requires you to **define all paths for a case statement**
+
+### Priority Keyword
+
+- Don't use it

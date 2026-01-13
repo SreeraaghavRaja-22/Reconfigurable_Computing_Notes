@@ -29,4 +29,16 @@
 
 ### Priority Keyword
 
+- If you don't define all paths and we use priority assignment, it will turn into a don't care (X)
 - Don't use it
+
+### Parameters
+
+- don't have to define a type for a parameter
+  - it will get its type from when it's assigned
+- should usually specify the type for parameter
+
+### What kind of circuit does a for loop synthesize into?
+
+- Elaboration will fully unroll the for loop
+  - By the time we get to synthesis, there will no longer be any for loop

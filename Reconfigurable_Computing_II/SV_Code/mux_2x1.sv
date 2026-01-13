@@ -51,3 +51,33 @@ module mux2x1_if2(
 
 endmodule 
 
+module mux2x1_case(
+    input logic in0, 
+    input logic in1, 
+    input logic sel, 
+    output logic out  
+)
+
+    always_comb begin 
+        case (sel):
+            1'b0 : out = in0; 
+            1'b1 : out = in1; 
+            // default :
+        endcase
+    end 
+
+endmodule 
+
+module mux_2x1(
+    input logic in0, 
+    input logic in1, 
+    input logic sel, 
+    output logic out
+);
+
+    mux2x1_assign(.*);
+    // mux2x1_if(.*);
+    // mux2x1_if2(.*);
+    // mux2x1_case(.*);
+
+endmodule

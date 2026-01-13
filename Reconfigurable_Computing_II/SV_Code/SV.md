@@ -6,3 +6,12 @@
 - Write SV with a **linter** to not run into stupid errors
 - Combinational logic synthesizes efficiently when described behaviorally
   - usually don't describe other logic this way
+
+## Combinational Logic
+
+- use **always_comb**
+- use blocking assignments for combinational logic
+  - blocking assignments are kinda like variables in vhdl
+  - updated immediately
+- use non-blocking assignments are like signals in vhdl
+  - updated at end of time stamp

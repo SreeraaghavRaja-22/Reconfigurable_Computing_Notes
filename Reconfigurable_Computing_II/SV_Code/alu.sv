@@ -116,43 +116,6 @@ module alu1 #(
 endmodule   
 
 
-module alu2 #(
-    parameter int WIDTH
-)(
-    input logic [WIDTH-1:0] in0, 
-    input logic [WIDTH-1:0] in1, 
-    input logic [      1:0] sel, 
-    output logic            neg, 
-    output logic            pos, 
-    output logic            zero, 
-    output logic [WIDTH-1:0] out
-);
-    always_comb begin 
-        // default values 
-        pos = 1'b0; 
-        neg = 1'b0; 
-        zero = 1'b0; 
-
-        case (sel)
-            // Addition
-            2'b00: out = in0 + in1; 
-            // Subtraction 
-            2'b01: out = in0 - in1; 
-            // AND 
-            2'b10: out = in0 & in1; 
-            // OR
-            2'b11: out = in0 | in1; 
-        endcase    
-
-        if (out == '0) begin 
-            zero = 1'b1; 
-        end else if (out[WIDTH-1:0] == 1'b0) begin 
-            pos = 1'b1; 
-        end else begin 
-            neg = 1'b1; 
-        end
-    end
-endmodule 
 
 module alu3 #(
     parameter int WIDTH
@@ -188,14 +151,51 @@ module alu3 #(
         zero = 1'bx; 
 
         case(sel)
-            ADD_SEL: out = in0 + in1; 
-            SUB_SEL: out = in0 - in1; 
+            ADD_SEL: begin 
+                        out = in0 + in1;
+                        update_flags();
+            end 
+            SUB_SEL: begin 
+                        out = in0 - in1; 
+                        update_flags();
+            end
             AND_SEL: out = in0 & in1; 
             OR_SEL : out = in0 | in1; 
         endcase
 
         // would this work since I'm basically doing the same update but at the end?
-        update_flags();
+        // I think it would work, but I only want to update the flags when 
+        // update_flags();
     end
 
 endmodule
+
+// ALU Package
+import alu_pkg::*
+module alu4 #(
+    parameter int WIDTH
+)(
+    input logic [WIDTH-1:0] in0, 
+    input logic [WIDTH-1:0] in1, 
+    input alu_sel_t         sel, 
+    output logic            neg, 
+    output logic            pos, 
+    output logic            zero, 
+    output logic [WIDTH-1:0] out
+);
+    always_comb begin 
+        pos = 1'b0; 
+        neg = 1'b0; 
+        zero = 1'b0;
+        case (sel)
+            alu_pkg::ADD_SEL: out = in0 + in1; 
+            alu_pkg::SUB_SEL: out = in0 - in1; 
+            alu_pkg::AND_SEL: out = in0 & in1; 
+            alu_pkg::OR_SEL:  out = in0 | in1; 
+        endcase
+
+        assign neg = signed'(out) < '0;
+        assign pos = signed'(out) > '0;
+        assign zero = out == 0; // automatic truncation
+    end
+endmodule   

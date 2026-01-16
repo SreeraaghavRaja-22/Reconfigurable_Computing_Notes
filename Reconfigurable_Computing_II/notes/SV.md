@@ -42,3 +42,9 @@
 
 - Elaboration will fully unroll the for loop
   - By the time we get to synthesis, there will no longer be any for loop
+
+### Structural Logic
+
+- Always draw out structural logic before writing code
+  - This will help figure out what to do (ex: look at mux4x1_design.png)
+  

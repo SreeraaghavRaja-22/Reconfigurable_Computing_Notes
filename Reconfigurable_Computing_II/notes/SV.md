@@ -48,3 +48,27 @@
 - Always draw out structural logic before writing code
   - This will help figure out what to do (ex: look at mux4x1_design.png)
   
+## Sequential Logic
+
+### Main Code Structure
+
+```sv
+  always_ff @(posedge clk or posedge rst) begin 
+    if(rst) begin 
+      out <= '0; 
+    end else begin 
+      out <= in;
+    end
+
+    // or 
+
+  always_ff @(posedge clk or posedge rst) begin 
+      out <= in;
+      if(rst) out <= '0;
+
+```
+
+- Use **always_ff** block to catch sequential logic errors
+- Synchronous reset may take more resources than an async reset
+  - uses a mux
+- ALWAYS USE NONBLOCKING ASSIGNMENTS

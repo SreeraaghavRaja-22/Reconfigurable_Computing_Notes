@@ -71,4 +71,4 @@
 - Use **always_ff** block to catch sequential logic errors
 - Synchronous reset may take more resources than an async reset
   - uses a mux
-- ALWAYS USE NONBLOCKING ASSIGNMENTS
+- ALWAYS USE NONBLOCKING ASSIGNMENTS FOR SEQUENTIAL LOGIC

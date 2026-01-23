@@ -72,3 +72,7 @@
 - Synchronous reset may take more resources than an async reset
   - uses a mux
 - ALWAYS USE NONBLOCKING ASSIGNMENTS FOR SEQUENTIAL LOGIC
+
+## Reset Logic
+
+- Not generally good practice to reset everything before starting a design (why?) but it's okay as a beginner

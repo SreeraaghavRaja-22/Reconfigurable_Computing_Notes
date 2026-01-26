@@ -223,3 +223,116 @@
 - Recommendation: start simple, maybe even P_N = 1 and P_W = 1
   - Get it working, then increase parallelism and parameterize
   - Or, set P_N = P_W = 8 to initially eliminate all width conversion challenges
+
+## Neuron Processor (NP) Interface
+
+- Interface should enable pipeline / streaming
+- Data Inputs: P_w (weights), P_w inputs (x), threshold
+  - Threshold can be 32 bits, but better to have it sized for max popcount
+    - $clog2(MAX_NEURON_INPUTS+1)
+    - MAX_NEURON_INPUTS parameter (most inputs in any neuron across BNN)
+  - Control Inputs: valid_in, last/eof
+- Neuron Interface
+  - 2 neurons each with 4 inputs
+  - Pw = 2
+    - 2 beats per neuron
+  - Input = 0110
+  - Neuron 0
+    - Weights: 1011
+    - Threshold: 2
+  - Neuron 1
+    - Weights: 0010
+    - Threshold: 1
+  - So would this mean that you have to use the total input again per neuron?
+    - YES
+
+## Layer Architecture
+
+- use seperate NPs for each layer
+  - easier to implement
+- Each layer contains:
+  - Pw,i parallel inputs and weights
+  - PN,i neuron processors
+- Configuration Manager should really be responsible for parsing
+- Layer Architecture should be as `smart` as it can be
+- Each layer i can have it's own P_N,i and P_W,i
+  - P_N,i = P_W,i+1
+  - Data consumption rate should always be equal to not cause backpressure
+- Initially use same P_N and P_W across all layers
+  - Greatly simplifies configuration manager
+  - P_N = P_W = 8 at first
+- Once working for all layers having same inputs and weights, then add logic for different values in each layer
+  - Configuration Manager must support outputting of weights of different widths
+  - e.g., PW,0 = 16, PW,1 = 8, P_W,2 = 4
+
+### Convention in Testbench
+
+- Single P_W (Parallel_Inputs) specifies parallel inputs in 1st hidden layer
+- One P_N for each non-input layer (PARALLEL_NEURONS[LAYERS])k
+- Can derive P_W,i for each layer i in P_N,i-1
+
+### More on TB
+
+- Stress neuron architecture
+  - TB will imitate configuration manager
+- After adding support different P_N in each layer, you can "load balance"
+  - Ideally, all layers should take the same amount of time
+    - if not, the design in not Pareto Optimal
+  - Figure out slowest layer in BNN
+
+## BNN Architecture
+
+- Make a pure BNN architecture
+- Inputs already binarized, no argmax
+- Literally just concatenates all layers as required by topology
+- No configuration manager, just the interface required by each layer
+- Make TB that imitates configuration manager
+  - Forces you to decided how manager will provide data
+- Stress test:
+  - Diff topologies
+  - Different P_W and P_N combinations
+  - Downstream backpressure
+  - Gaps in input stream
+
+## BNN_FCC Architecture
+
+- Combine BNN with binarization, argmax, and configuration manager
+
+## Configuration Manager
+
+### Parsing Challenges
+
+- weights will likely cahnge between neurons in middle bus
+  - cannot statically divide weights into separate neurons
+- High Performance Solution:
+  - Barrel shift register to align each neuron's weights with position 0
+  - Not easy to do efficiently, positions change in each layer
+- Easier solution: asymmetric FIFO
+  - Parse indiviudal bytes
+- Problem: what if the payload is not aligned with B bits?
+  - B = 64, payload = 6 bytes (48 bits)
+  - Bus provides 2 bytes that aren't needed
+- Unused bytes must be ignored
+  - 2 options
+    - Drain extra bytes from FIFO (use total_bytes field of configuration header)
+    - Prevent bytes from entering FIFO (requires specialized FIFO with variable write count)
+- How to identify extra bytes?
+  - Keep knowledge of payload size, drain FIFO after reaching payload end
+  - Use TKEEP AXI signal (specifies bytes that should be ignored)
+
+### RAM WIDTH Conversion Challenges
+
+- Each neuron processor takes P_w weights/inputs in parallel
+  - Need to convert 8-bit config stream into P_w bit words in RAMs
+- Asymmetric FIFOs again solve this problem
+- A few common problems:
+  - If P_W > 8, you must ensure you write in multiples of P_W/8
+  - If P_W < 8, you might have to throw out data (drain FIFO)
+
+### MISC Suggestions
+
+- Require the number of neurons in layer i to be a mulitple of P_N,i
+- Require inputs to BNN to be multiple of PARALLEL_INPUTS
+- If everything is working, you can then add more flexibility
+  - Biggest Limitation is that SFC topology is 784 inputs
+    - not a multple of 2 but is a multiple of 8

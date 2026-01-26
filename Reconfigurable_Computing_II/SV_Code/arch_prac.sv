@@ -165,3 +165,183 @@ module arch4_warnings #(
     assign add_out = in1_r + in2_r; 
 
 endmodule
+
+
+module arch5 #(
+    parameter int WIDTH = 8;
+)(
+    input logic clk, 
+    input logic rst, 
+    input logic [WIDTH-1:0] in1, 
+    input logic [WIDTH-1:0] in2, 
+    input logic [WIDTH-1:0] in3,
+    output logic [WIDTH-1:0] out1, 
+    output logic [WIDTH-1:0] out2
+);
+
+    logic [WIDTH-1:0] in1_r, in2_r, in3_r;
+
+    always_ff @(posedge clk) begin
+
+        add_out = in1_r + in2_r; 
+        out2 <= add_out * in3_r; 
+        in1_r <= in1; 
+        in2_r <= in2; 
+        in3_r <= in3; 
+
+        if(rst) begin 
+            //out1 <= '0;
+            out2 <= '0; 
+            in1_r <= '0;
+            in2_r <= '0; 
+            in3_r <= '0; 
+        end 
+    end
+
+    assign out1 = add_out; // really dangerous because there will be a race condition (if that's not a problem then it's okay)
+endmodule
+
+module arch5_2 #(
+    parameter int WIDTH = 8;
+)(
+    input logic clk, 
+    input logic rst, 
+    input logic [WIDTH-1:0] in1, 
+    input logic [WIDTH-1:0] in2, 
+    input logic [WIDTH-1:0] in3,
+    output logic [WIDTH-1:0] out1, 
+    output logic [WIDTH-1:0] out2
+);
+
+    logic [WIDTH-1:0] in1_r, in2_r, in3_r;
+    logic [WIDTH-1:0] add_out; 
+
+    always_ff @(posedge clk) begin
+
+        // add_out = in1_r + in2_r; risk
+        out1 <= add_out; 
+        out2 <= add_out * in3_r; 
+        in1_r <= in1; 
+        in2_r <= in2; 
+        in3_r <= in3; 
+
+        if(rst) begin 
+            //out1 <= '0;
+            out2 <= '0; 
+            in1_r <= '0;
+            in2_r <= '0; 
+            in3_r <= '0; 
+        end 
+    end
+
+    // the risk with the blocking assignment here is that add_out is declared outside the always block, so it could be used somewhere else and could be a blocking assignment
+
+    // Solution 
+    assign add_out = in1_r + in2_r; 
+endmodule
+
+module arch5_3 #(
+    parameter int WIDTH = 8;
+)(
+    input logic clk, 
+    input logic rst, 
+    input logic [WIDTH-1:0] in1, 
+    input logic [WIDTH-1:0] in2, 
+    input logic [WIDTH-1:0] in3,
+    output logic [WIDTH-1:0] out1, 
+    output logic [WIDTH-1:0] out2
+);
+
+    logic [WIDTH-1:0] in1_r, in2_r, in3_r;
+    
+
+    always_ff @(posedge clk) begin
+        logic [WIDTH-1:0] add_out; // another solution because the scope of add_out is limited to always block
+        // super safe if done this way
+
+        // add_out = in1_r + in2_r; risk
+        out1 <= add_out; 
+        out2 <= add_out * in3_r; 
+        in1_r <= in1; 
+        in2_r <= in2; 
+        in3_r <= in3; 
+
+        if(rst) begin 
+            //out1 <= '0;
+            out2 <= '0; 
+            in1_r <= '0;
+            in2_r <= '0; 
+            in3_r <= '0; 
+        end 
+    end
+endmodule
+
+module arch6_bad #(
+    parameter int WIDTH = 8;
+)(
+    input logic clk, 
+    input logic rst, 
+    input logic [WIDTH-1:0] in1, 
+    input logic [WIDTH-1:0] in2, 
+    input logic [WIDTH-1:0] in3,
+    output logic [WIDTH-1:0] out1, 
+    output logic [WIDTH-1:0] out2
+);
+
+    logic [WIDTH-1:0] in1_r, in2_r, in3_r; 
+
+    always_ff @(posedge clk) begin
+        out1 = in1_r + in2_r;
+        out2 <= out1 * in3_r; 
+        in1_r <= in1; 
+        in2_r <= in2; 
+        in3_r <= in3; 
+
+
+        if(rst) begin
+            /// out1 <= '0; 
+            out2 <= '0;
+            in1_r <= '0;
+            in2_r <= '0; 
+            in3_r <= '0;
+        end
+    end 
+
+endmodule
+
+module arch6 #(
+    parameter int WIDTH = 8;
+)(
+    input logic clk, 
+    input logic rst, 
+    input logic [WIDTH-1:0] in1, 
+    input logic [WIDTH-1:0] in2, 
+    input logic [WIDTH-1:0] in3,
+    output logic [WIDTH-1:0] out1, 
+    output logic [WIDTH-1:0] out2
+);
+
+    logic [WIDTH-1:0] in1_r, in2_r, in3_r; 
+    logic [WIDTH-1:0] add_out;
+
+    always_ff @(posedge clk) begin
+        
+        out2 <= add_out * in3_r; 
+        in1_r <= in1; 
+        in2_r <= in2; 
+        in3_r <= in3; 
+
+
+        if(rst) begin
+            /// out1 <= '0; 
+            out2 <= '0;
+            in1_r <= '0;
+            in2_r <= '0; 
+            in3_r <= '0;
+        end
+    end 
+
+    assign add_out = in1_r + in2_r; 
+    assign out1 = add_out;
+
+endmodule

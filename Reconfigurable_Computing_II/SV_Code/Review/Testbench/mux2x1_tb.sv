@@ -58,21 +58,30 @@ module mux2x1_tb
             // #10; 
             // #PERIOD; 
             //#TIME_PERIOD
-            @(posedge clk)
+        //     @(posedge clk)
 
-            //expected_out = sel ? in1 : in0;
-            expected_out = i[2] ? i[1] : i[0];
+        //     //expected_out = sel ? in1 : in0;
+        //     expected_out = i[2] ? i[1] : i[0];
 
-            // if (out != expected_out) begin 
-            //     $display("ERROR: [%0t] out = %b instead of %b", $time, out, expected_out);
-            //     $error("out = %b instead of %b", out, expected_out);
-            // end
-            assert (out !== expected_out) else $error("out = %b instead of %b", out, expected_out);
+        //     // if (out != expected_out) begin 
+        //     //     $display("ERROR: [%0t] out = %b instead of %b", $time, out, expected_out);
+        //     //     $error("out = %b instead of %b", out, expected_out);
+        //     // end
+        //     assert (out !== expected_out) else $error("out = %b instead of %b", out, expected_out);
+        // end
         end
-
-        // turn off the generate clk process
+        $display("Tests completed");
+            // turn off the generate clk process
         disable generate_clk;
-
-        
     end
+
+    initial begin : verify_output
+        forever begin 
+            @(posedge clk)
+            expected_out = sel ? in1 : in0; 
+            assert(out == expected_out) else $error("out = %b instead of %b", out, expected_out);
+        end
+    end 
+
 endmodule
+    

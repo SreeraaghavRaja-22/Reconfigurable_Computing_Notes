@@ -128,8 +128,26 @@ module register_tb3;
     initial begin : check_outputs
         forever begin 
             @(posedge clk);
-            if (prev_en && prev_in != out) $error("[%0t] out = %d instead of %d.", $time, out, prev_in);
-            if (!prev_en && out != prev_out) $error("[%0t] out = %d instead of %d.", $time, out, prev_out);
+			// SystemVerilog will evaluate all undefined values to false, so 
+			if (1'bX) $display("123456789"); // will evaluate to false
+			if (!1'bX) $display("123456789"); // will also evaluate to false...why?
+			// What's the opposite of an undefined value?? -- AN UNDEFINED VALUE!!
+			// == and === logical vs. case 
+			// != and !== logical vs. case (compares explicit values)
+			// case operators are not synthesizable
+			
+			// Common Gotchas
+			
+			// 4'b0010 == 4'b0100
+			// 4'bX010 != 4'b0100 	=>  4'bXXXX => false
+			// 4'bX100 != 4'b0100   =>  false
+			// 4'bX100 !== 4'b0100  =>  true
+			
+			
+			
+            if (prev_en === 1'b1 && prev_in !== out) $error("[%0t] out = %d instead of %d.", $time, out, prev_in);
+            if (prev_en !== 1'b1 && out !== prev_out) $error("[%0t] out = %d instead of %d.", $time, out, prev_out); 
+			// be really careful with conditions when you have undefines because prev_en !== 1'b1 reports errors, but prev_en === 1'b0 doesn't report errors
             if (out != in) $error("Expected=%0h, Actual=%0h", prev_in, out); // module to check outputs
         end 
     end
@@ -195,6 +213,4 @@ module register_tb4;
     end
 endmodule 
 
-
-
-
+module ( 

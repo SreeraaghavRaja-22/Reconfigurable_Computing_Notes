@@ -404,6 +404,9 @@
 		// accomplishes this concisely.
 		
 		// after 0 has fallen, ensure that data_out is 0 for CYCLES cycles when en is 1
+		// checks if it has been asserted 
+		
+		// CYCLES == 5
 		assert property(@(posedge clk) $fell(rst) |-> data_out == '0 throughout en[-> CYCLES]); 
 		
 		// Verify the output during reset. 
@@ -461,5 +464,7 @@
 		
 		// assert property (@(posedge clk) disable iff (rst) data_out == '0 throughout en [-> CYCLES])
 		// else $error("[%0t]: actual data_out = %0d, exepcted 0", $realtime,, $sampled(data_out)); 
+
+		// Look at material from Ben Cohen to understand more about assertions
 		
 	endmodule 

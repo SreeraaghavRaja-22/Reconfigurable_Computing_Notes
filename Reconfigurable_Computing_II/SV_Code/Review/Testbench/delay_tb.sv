@@ -18,7 +18,7 @@
 			.*
 		);
 		
-		initial beign : generate_clock
+		initial begin : generate_clock
 			forever #5 clk <= ~clk; 
 		end 
 		
@@ -256,6 +256,7 @@
 			
 		// Don't check for the output matching the dealyed input until an input 
 		// has reached the output. 
+		// TLDR: this ensures that we don't compare uninitialized data since that always evaluates to false
 		assert property (@(posedge clk) disable iff (rst || count < CYCLES) data_out == $past(data_in, CYCLES));
 		
 		// Check for correct outputs during reset and until inputs reach the output. 
@@ -317,7 +318,8 @@
 			// Here, we simply add a gating parameter to the $past signal using the
 			// en signal. This causes the $past to ignore values in cycles when en 
 			// is 0.  
-			assert property (@(posedge clk) disable iff (rst) count == CYCLES |-> data_out == $past(data_in, CYCLES, en));
+			// TLDR: only counts cycles where the enable is actually asserted
+			assert property (@(posedge clk) disable iff (rst) count == CYCLES |-> data_out == $past(data_in, CYCLES, en)); 
 			
 			// Conceptually identical to the above assertion, this assertion fails 
 			// on the clock edge where count becomes CYCLES. Disable does not sample valus. 
@@ -329,10 +331,13 @@
 			// To fix it, we can do the following, which ends up identical to the first assertion: 
 			
 			// assert property (@(posedge clk) disable iff (rst || $sampled(count) < CYCLES) data_out == $past(data_in, CYCLES, en));
-			
+			// IMPORTANT: variables used in the disable condition are not sampled 
+			// IMPORTANT: Complex disable conditions are usually a bad idea unless you know what you're doing
 			assert property (@(posedge clk) disable iff (rst) count < CYCLES |-> data_out == '0); 
 			
 			// Check to make sure the output doesn't change when not enable 
+			// This is really important to use to check if the enable is asserted 
+			// compares the value of this data_out with its value in the previous cycle
 			assert property (@(posedge clk) disable iff (rst) !en |=> $stable(data_out)); 
 			
 	endmodule 
@@ -389,6 +394,8 @@
 		// much less code. This operator is called the "go to" repetition operator. 
 		// It causes thea antecedent to trigger after en has been asserted in CYCLES
 		// cycles, which do not have to be consecutive. 
+		// [-> varName] = Go To Operator and it is non-consecutive count operator
+		// Wait until CYCLES enables have passed and one cycle later, data_out == data_in from CYCLES cycles in the past
 		assert property (@(posedge clk) disable iff (rst) en [-> CYCLES] |=> data_out == $past(data_in, CYCLES, en));
 		
 		// To verify the reset, we can check to make sure the data_out is 0 
@@ -396,9 +403,11 @@
 		// until en has been aserted in CYCLES times. The following assertion
 		// accomplishes this concisely.
 		
-		assert property(@(posedge clk) $fell(rst) |-> data_out == '0 through en[-> CYCLES]);
+		// after 0 has fallen, ensure that data_out is 0 for CYCLES cycles when en is 1
+		assert property(@(posedge clk) $fell(rst) |-> data_out == '0 throughout en[-> CYCLES]); 
 		
 		// Verify the output during reset. 
+		// When reset is asserted, it implies that one cycle later data_out is 0
 		assert property (@(posedge clk) rst |=> data_out == '0);
 		
 		// Check to make sure the output doesn't change when not enabled. 

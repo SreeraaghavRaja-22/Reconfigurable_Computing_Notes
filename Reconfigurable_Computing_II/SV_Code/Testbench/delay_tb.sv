@@ -398,6 +398,15 @@
 		// Wait until CYCLES enables have passed and one cycle later, data_out == data_in from CYCLES cycles in the past
 		assert property (@(posedge clk) disable iff (rst) en [-> CYCLES] |=> data_out == $past(data_in, CYCLES, en));
 		
+		/* Messages: can see when assertion finishes and when it is started
+		// This assert is asserted every time that rst is not false, so 4 assertions will finish at the same time for this case
+		assert property (@(posedge clk) disable iff (rst) en [-> CYCLES] |=> data_out == $past(data_in, CYCLES, en)) begin 
+			$info("[%0t] Assertion Succeeded for data_out = %0h", $realtime, $sampled(data_out));
+		end 
+		*/
+		
+		
+		
 		// To verify the reset, we can check to make sure the data_out is 0 
 		// throughout the entire window of time between when reset is cleared 
 		// until en has been aserted in CYCLES times. The following assertion
@@ -407,7 +416,36 @@
 		// checks if it has been asserted 
 		
 		// CYCLES == 5
-		assert property(@(posedge clk) $fell(rst) |-> data_out == '0 throughout en[-> CYCLES]); 
+		// This only occurs when the first time we come out of reset and applies the right condition
+		// at the end of the window of time 
+		assert property (@(posedge clk) $fell(rst) |-> data_out == '0 throughout en[-> CYCLES]); 
+		
+		/* This is useful because this will display infromation every time there is no error 
+		assert property (@(posedge clk) $fell(rst) |-> data_out == '0 throughout en[-> CYCLES]) begin
+			$info("[%0t] Assertion Succeeded for data_out = %0h", $realtime, $sampled(data_out));
+		end 
+		
+		// $sampled() lets you print out the value you used for the conditional otherwise assertion will 
+			print out an updated value until the assertion is applied
+		*/
+		
+		/* Failed Messages
+		assert property (@(posedge clk) $fell(rst) |-> data_out == '0 throughout en[-> CYCLES]) else
+			$error("[%0t] Assertion failed for data_out = %0h", $realtime, $sampled(data_out)); 
+		*/
+		
+		/* ----------- Possible Errors ----------- */
+		// TLDR: this checks if the right condition is true after every time
+		assert property (@(posedge clk) !rst |-> data_out == '0 throughout en [-> CYCLES]);
+		
+		// TLDR: Starts a new assertion every single cycle -- even more generalized than the error above
+		assert property (@(posedge clk) data_out == '0 throughout en [-> CYCLES]); 
+		
+		// TLDR: Only applies the condition until the beginning of that window of time so data can change 
+		// at until
+		assert property (@(posedge clk) $fell(rst) |-> data_out == '0 until en[-> CYCLES]) begin 
+			$info("[%0t] Assertion Succeeded for data_out = %0h", $realtime, $sampled(data_out)); 
+		end
 		
 		// Verify the output during reset. 
 		// When reset is asserted, it implies that one cycle later data_out is 0
@@ -415,6 +453,7 @@
 		
 		// Check to make sure the output doesn't change when not enabled. 
 		assert property (@(posedge clk) disable iff (rst) !en |=> $stable(data_out)); 
+		/* ----------- Possible Errors ----------- */
 		
 		// Common Mistakes: 
 		// The following assertion is similar to the one we used above. However, it 

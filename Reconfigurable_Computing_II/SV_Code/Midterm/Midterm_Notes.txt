@@ -1,0 +1,98 @@
+Midterm Information:
+
+  - Questions: 
+  - Mix of multiple choice and open answer questions
+  - FSMD question 
+  - Schematic to Code Question
+  
+  
+  Examples: 
+    - Look at architecture examples and implement them
+	- Unless something is said to be done structurally, do it behaviorally. 
+	
+	
+	
+  Examples: 
+	module arch 1 #(
+		parameter int WIDTH;
+	)(
+		input logic clk, 
+		input logic rst, 
+		input logic [WIDTH-1:0] in1, 
+		input logic [WIDTH-1:0] in2, 
+		input logic [WIDTH-1:0] in3, 
+		input logic [WIDTH-1:0] in4, 
+		output logic [WIDTH-1:0] out1, 
+		output logic [WIDTH-1:0] out2
+	); 
+	
+		logic [WIDTH-1:0] x;
+		
+		always_ff @(posedge clk) begin 
+			// When is a register inferred?
+			// 1) a non-blocking assignment on a clock edge
+			out1 <= ___;
+			x <= ; 
+			
+			// 2) On a blocking assignment on a clock edge, where there exists a 
+			// path that reads the variables before it is defined
+			y = in1; // this will not become a register -- it becomes a wire
+			out1 <= y; 
+			
+			out1 <= y; 
+			y = in1; 
+			
+			z = in1;
+			out1 <= z; 
+			
+			// this will create a register for m 
+			m <= in1;
+			out1 <= m; 
+		end
+		
+		assign out2 = z; // z becomes a register because y is always read even before it is assigned
+		
+		always_ff @(posedge clk) begin 
+			
+			// Start-of-block reset
+			if (rst) begin 
+				// out1 <= 0'; If we don't want to reset something it will
+				// synthesize into a mux and other logic (bad)
+			end else begin 
+				out1 <= in1; 
+			end
+		end
+		
+		// preferred but could cause issues with an asynchronous reset in it
+		always_ff @(posedge clk // or posedge rst) begin
+			out1 <= in1; 
+			
+			// End-of-block reset
+			if (rst) begin 
+				
+			end
+	
+	endmodule 
+	
+	
+	// Synthesis Coding Guidelines
+	// Combinational Logic: 
+	
+	// 1) All the inputs need to be in the sensitivity list 
+	// always_comb
+	
+	// 2) All outputs must be defined on all paths
+	// if there exists a path where an output is not defined
+	// then the output will be synthesized as a latch
+	
+	// Suggestions: use default values, make sure to have 
+	// to "else" or "default"
+	
+	Testbench
+		- If you have a signal assigned in one process and used in another 
+		  and have a blocking assignment, that will instantly lead to a race condition
+		- Solution: always drive DUT inputs with non-blocking assignments 
+		- Assertions: 
+			- make sure to know what implication, sequences, etc. in FF example
+			
+	

@@ -6,4 +6,3 @@ Instructions to Connect the Server
 - use command vncserver and copy that into RealVNC Viewer
 - Go to terminal and type source /apps/reconfig/enable_std
 - can use quartus &, vivado &, and vsim & to access everything
-- 

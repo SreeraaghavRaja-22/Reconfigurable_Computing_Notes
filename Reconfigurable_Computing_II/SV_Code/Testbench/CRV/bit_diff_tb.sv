@@ -228,7 +228,7 @@ module bit_diff_tb_no_heirarchy; #(
         // create a case for the first test
         @(posedge clk iff !rst && go);
         scoreboard_data_mailbox.put(data);
-        if (LOG_START_MONITOR) $display("[%0t] Start monitor detected test with data = %0h", $realtimme, data);
+        if (LOG_START_MONITOR) $display("[%0t] Start monitor detected test with data = %0h", $realtime, data);
 
         forever begin 
             @(posedge clk iff done && go);

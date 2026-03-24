@@ -259,11 +259,11 @@ module bit_diff_tb_no_heirarchy; #(
 
             expected = model(data, WIDTH);
 
-            if (result == expected) begin
+            if (actual == expected) begin
                 $display("Test passed (time %0t) for input = %h", $time, data);
                 passed++;
             end else begin
-                $display("Test failed (time %0t): result = %0d instead of %0d for input = %h.", $time, result, expected, data);
+                $display("Test failed (time %0t): result = %0d instead of %0d for input = %h.", $time, actual, expected, data);
                 failed++;
             end
         end

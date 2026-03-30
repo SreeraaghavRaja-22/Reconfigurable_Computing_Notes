@@ -1,0 +1,5 @@
+AXI Multiplier 
+
+- Each input comes from the AXI streaming interface
+- Try to keep the number of parameters a lot lower in the script
+- if you have a lot of parameters for a sequence item, just use a typedef for it (for parameterized classes)

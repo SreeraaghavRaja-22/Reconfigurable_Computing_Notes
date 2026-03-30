@@ -1,0 +1,4 @@
+Notes 
+
+- beat level simulation is easier to find errors than packet level simulation 
+

@@ -96,4 +96,31 @@
   - Apply relevant timing optimizations based on bottlenecks
   - Repeat from 5 for next most-negative path until no more failing paths
     - occasionally restart from 2 to make sure bottlenecks haven't changed
-  
+- Cell/Logic Delays
+  - For each failing path, identify types of cells along the path
+    - LUTs, embedded RAM, DSPs
+  - Check device-specific suggestions for each cell type
+    - Register RAM outputs
+    - Avoid read-during-write in RAM
+    - Structure multiply-accumulates to map efficiently to DSPs
+    - Write code to ensure inference of specific FPGA primitive
+    - usually under "*Recommended HDL Coding Styles*"
+  - Most common bottleneck is LUT delays
+    - combination logic divided into heirarchy of LUTs
+    - Optimize longest path through that heirarchy
+- Optimizing LUT Delays
+  - Goal: optimize logic to decrease max LUT heirarchy depth
+    - an n-input LUTs can implement any n-input, 1-output logic function (gates don't matter)
+    - Any function with > n inputs will use > 1 LUT
+    - Strategy 1: reduce logic inputs
+      - Comparator Example
+        - try to replace some inputs with constants (very effective)
+        - e.g. count down from input to 0 instead of 0 to input (always comparing to a constant)
+    - Strategy 2: break up longest path with extra registers (pipelining)
+      - tradeoff extra cycles of latency for decreased logic delays
+      - commonly used where latency is not a problem
+    - Strategy 3: Retiming
+      - Move registers (forwards or backwards) to help balance logic delays
+        - move from stage with low slack to stage with high slack
+      - Tools apply retiming automatically, but require registers to exist
+        - be aware of tool restrictions and limitations of initial states for automatic usage

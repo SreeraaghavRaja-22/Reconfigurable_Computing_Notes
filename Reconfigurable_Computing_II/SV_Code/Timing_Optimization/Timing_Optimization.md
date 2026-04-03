@@ -124,3 +124,68 @@
         - move from stage with low slack to stage with high slack
       - Tools apply retiming automatically, but require registers to exist
         - be aware of tool restrictions and limitations of initial states for automatic usage
+      - Automatic retiming is useful when manual specification is difficult
+      - Comparator example pipelined automatically with extra FF output
+    - Strategy 4: Reduce Precision
+      - Example: use 3-bit inputs instead of 6-bit inputs
+      - Limitation: circuit must still work with reduced precision
+      - More realistic examples:
+        - Machine learning, signal processing perform well with reduced precision
+      - Reducing precision doesn't always reduce LUT amounts or maximum delay
+        - a 4-bit comparator still has max Tc of 2 LUTs
+  - Interconnect Delays
+    - For optimizing cell delays, Tic dominate
+      - For highly pipelined designs, Tic is usually the **main bottleneck**
+    - Long interconnect delays can result from any combination of:
+      - Distant Resources
+        - Optimization: find ways to place resources closer
+      - High Fanout
+        - Optimization: reduce fanout, add cycles, and/or steal slack from other cycles
+        - Need the context of the overall application to solve this well
+      - Congested Routing Resources
+        - Optimization: reduce connections, resource utilization
+        - Close components but long routes might be a congestion issue
+  - Optimizing Distant Resources  
+    - Placement tries to minimize distance of connections between resources
+    - Distant placements primarily result from:
+      - High resource utilization
+      - Routing congestion
+    - Strategy 1: reduce resource utilization
+      - Many application-specific strategies
+      - Change resource types
+        - use embedded RAM for long FF chains, perform multiple operations in DSPs
+      - Sacrifice performance (if possible) for fewer resources (*time-multiplexing*)
+    - Strategy 2: add FFs to break up long connection into multiple cycles (pipelining)
+      - effective, but can be awkward to implement
+      - must identify distant connections and then modify design
+      - placement and routing aren't guaranteed to produce same results
+        - distant resources in one compile might be close in another compile
+      - Increases FF usage, may cause another bottleneck
+      - Especially effective on FPGAs with HyperFlex (FFs embedded into interonnect)
+  - Optimizing Routing Congestion
+    - **Congestion** occurs when too many signals routed in the same area of the FPGA
+      - High contention for tracks and switch boxes
+      - Must route around congested regions
+        - adds a lot of delay with the long distances
+    - Strategies:
+      - Minimize Resources
+      - Use time multiplexing or Network-on-Chip (NoC)
+      - Pipelining Interconnect may help, but can also hurt
+        - Don't know what nets will require additional FFs before routing
+      - Optimizing Fanout
+  - Optimizing Fanout
+    - Strategy 1: Register Duplication
+      - Problem: difficult to place all sinks close to high-fanout source
+      - Solution: *replicate* fanout source register (FF1)
+      - Limitation: increases fan-out of preceding signal (FF0)
+        - can create new bottleneck since they two FFs steal slack
+      - Design Difficulties: deciding duplication amount is tricky
+        - can be automatic or manually specified per signal
+    - Strategy 2: Pipelined Fanout Trees
+      - Handles high fanout across multiple cycles of lower fanout
+        - 3 cycles of 2-fanout instead of 1 cycles of 8-fanout
+      - Limitations
+        - increases FF usage and latency
+        - manual implementation is awkward and may require exploration
+      - Heirarchical proximity register chains can help automate
+        - But place restrictions on code

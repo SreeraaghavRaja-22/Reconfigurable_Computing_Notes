@@ -235,3 +235,11 @@
         - Reduce logic delay
       - Increases mux inputs, but mux not on critical path
         - Steals slack from non-critical path
+
+## Register Duplication Strategy
+
+- Steps to Follow for Register Duplication:
+  - Start with design
+  - Try max fanout
+  - Try manual duplication
+  - Create a register tree

@@ -1,5 +1,9 @@
 # FPGA Timing Optimization
 
+## Tutorial Link
+
+- look at this [Timing Analysis Tutorial](https://github.com/ARC-Lab-UF/intel-training-modules/tree/master/timing)
+
 ## Background Information
 
 - Pick Constraints based on Situation
@@ -187,5 +191,47 @@
       - Limitations
         - increases FF usage and latency
         - manual implementation is awkward and may require exploration
-      - Heirarchical proximity register chains can help automate
+      - **Heirarchical proximity register chains** can help automate
         - But place restrictions on code
+
+## Quartus Settings
+
+- Background Information:
+  - Quartus connects top-level module I/O to FPGA pins
+    - Normally, pin mapping also done with constraints
+  - We do not want I/O connected to pins
+    - Pins can represent unrealistic use case, and I/O can exceed pin count
+    - Mapping to pins creates excessively long delays
+  - Solution: Quartus allows I/O to be mapped to virtual pins
+    - Internal FPGA rsources used as pins for timing analysis
+  - Specified in add_tree.qsf (or through assignment editor in Quartus)
+    - Apply to module inputs and outputs:
+      - set_instance_assignment -name VIRTUAL_PIN ON -to inputs
+      - set_instance_assignment -name VIRTUAL_PIN ON -to sum
+    - Clock and reset are generally left mapped to actual pins
+  - Synthesis tools will never change the number of cycles in the design
+- Timer Example:
+  - Module Interface:
+    - Inputs:
+      - go: starts timer
+      - cycles: teh number of cycles to count
+    - Output:
+      - done: asserted after cycles cycles elapse
+    - Parameters:
+      - WIDTH: number of bits for inputs
+  - Timer Functionality:
+    - Circuit waits in IDLE until go is asserted
+      - when user asserts go, timer moves to WORKING state
+    - WORKING state counts once per cycle up to cycles
+    - When count == cycles, timer asserts *done* and returns to IDLE state
+    - Actual circuit stores cycles in internal register when *go* is asserted
+      - uses count_r to specify register status of count
+  - Timer Bottleneck
+    - always understand structure of code
+    - Timing Bottleneck: wide comparator
+      - 2*WIDTH inputs creates logic delay of 3 LUTs for width = 32
+    - Solution: count from cycles down to 1 instead of 1 to cycles
+      - Reduces compartor inputs from 2*WIDTH to WIDTH bits
+        - Reduce logic delay
+      - Increases mux inputs, but mux not on critical path
+        - Steals slack from non-critical path

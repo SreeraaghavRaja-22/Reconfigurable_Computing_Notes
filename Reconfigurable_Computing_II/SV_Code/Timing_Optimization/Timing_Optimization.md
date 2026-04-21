@@ -243,3 +243,45 @@
   - Try max fanout
   - Try manual duplication
   - Create a register tree
+
+## Multicycle Paths
+
+- consider having a path that takes more than on cycle for maximal performance
+  - removes bottneck rather than having a clock that's half as fast to solve the same issue
+- Single-Cycle Paths
+  - **Synthesis tools assume that all register pairs are single-cycle paths**
+  - Setup Edge: rising edge of the destination clock, 1 cycle after source clock
+  - Hold Edge: rising edge of destination clock, the same cycle as source clock
+- Tell synthesis tool the setup edge
+  - provided by the multicycle path constraint
+- set_multicycle_path -from{source} -to{dest} -setup 2
+  - specifies the setup check should be done relative to rising edge 2
+  - essentially moves the setup edge over by 1 cycle
+  - also moves **hold edge over by 1 cycle**
+- Why does the hold edge move?
+  - The destination register is loaded every N cycles
+    - has dest reg has to hold its value for N cycles before it changes
+    - If data arrives before cycle N-1 (hold edge) then the register will be improperly written
+  - Synthesis must guarantee hold timing (w/ buffers, delays)
+    - P&R will fail
+    - Hold violations
+- How to design circuit to make sure hold edge doesn't move:
+  - Make destination register have a delayed enable
+    - enable assert at most every N cycles
+    - hold edge no longer matters, early data will be ignored
+  - Tell synthesis about the new hold edge:
+    - set_multicycle_path -from{source} -to{dest} -hold 1
+    - Specified as negative offset from the setup edge
+      - For setup of N, usually want hold of N-1
+    - Examples:
+      - set_multicycle_path -from{source} -to{dest} -setup 5
+      - set_multicycle_path -from{source} -to{dest} -hold 4
+  - Complete Design
+    - Constraints:
+      - set_multicycle_path -from{in2_r*} -to {out1_r*} -setup 2
+      - set_multicycle_path -from{in3_r*} -to {out1_r*} -setup 2
+      - set_multicycle_path -from{in2_r*} -to {out1_r*} -hold 1
+      - set_multicycle_path -from{in3_r*} -to {out1_r*} -hold 1
+- Restricted FMax
+  - this is the most important clock frequency to look at on Quartus
+  - Unrestriced FMax is not for the board

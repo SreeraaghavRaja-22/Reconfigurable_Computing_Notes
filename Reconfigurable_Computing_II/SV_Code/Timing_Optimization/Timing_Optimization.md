@@ -285,3 +285,51 @@
 - Restricted FMax
   - this is the most important clock frequency to look at on Quartus
   - Unrestriced FMax is not for the board
+
+## Reset Reduction
+
+- Only reset something that needs to be reset
+- If you don't need a reset:
+  - Remove it
+  - Or set the reset to 0 in the higher level module in the event you need to use the reset for a different case
+    - .rst(1'b0);
+
+## Count Example
+
+- Remove the blocking assignment from a rising clock edge unless its scope is limited to that process block
+- Can add mux to remove bottleneck in up-down logic + saves resources
+
+## FPGA Timing Optimization FSMD
+
+- Only do an assignment on a transition if necessary
+- Don't assign a register in a state if that assignment isn't needed
+
+## More on Timing Optimization
+
+- 3-Input Adder
+  - Is it possible to create a 3-input adder that uses the same number of resources as a 2-input adder?
+    - For most FPGAs it's no
+  - Methods of Optimization
+    - Separate the Sum and Carry functionality
+
+## Ram Inference Templates
+
+- Memory is significantly important to understand for timing optimization
+- Types of Ram:
+  - Single Port: one port that can read or write (read/write port)
+  - Dual Port:
+    - Simple Dual Port (SDP): one read port, one write port
+    - True Dual Port (TDP): two read ports, two write ports
+- Read During Write Behaviors
+  - Write First: the read port returns the new data being written
+  - Read First: the read port returns the old data
+- TradeOffs:
+  - Write First requires more resources and has a significant clock penalty
+    - Suggestion: **avoid write first whenever possible**
+- Types of Ram Cont:
+  - Block RAM
+  - Distributed RAM
+  - UltraRAM
+- Latencies:
+  - 1-cycle or 2-cycle
+  - 0-cycle (async which requires distributed RAM)
